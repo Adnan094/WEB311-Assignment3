@@ -1,0 +1,34 @@
+<h2>My Tasks</h2>
+
+<a href="/tasks/add" class="btn">Add New Task</a>
+
+<table>
+    <tr>
+        <th>Title</th>
+        <th>Status</th>
+        <th>Due Date</th>
+        <th>Actions</th>
+    </tr>
+
+    <% tasks.forEach(task => { %>
+        <tr>
+            <td><%= task.title %></td>
+            <td><%= task.status %></td>
+            <td><%= task.dueDate ? task.dueDate.toDateString() : 'N/A' %></td>
+
+            <td>
+                <form action="/tasks/status/<%= task.id %>" method="POST" style="display:inline;">
+                    <button type="submit">
+                        <%= task.status === "pending" ? "Mark Completed" : "Mark Pending" %>
+                    </button>
+                </form>
+
+                <a href="/tasks/edit/<%= task.id %>" class="btn">Edit</a>
+
+                <form action="/tasks/delete/<%= task.id %>" method="POST" style="display:inline;">
+                    <button type="submit" onclick="return confirm('Delete task?');">Delete</button>
+                </form>
+            </td>
+        </tr>
+    <% }); %>
+</table>

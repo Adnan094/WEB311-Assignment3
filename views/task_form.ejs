@@ -1,0 +1,27 @@
+<h2><%= task ? "Edit Task" : "Add New Task" %></h2>
+
+<form action="<%= action %>" method="POST">
+
+    <% if (error) { %>
+        <p class="error"><%= error %></p>
+    <% } %>
+
+    <label>Title</label>
+    <input type="text" name="title" required value="<%= task ? task.title : '' %>">
+
+    <label>Description</label>
+    <textarea name="description"><%= task ? task.description : '' %></textarea>
+
+    <label>Due Date</label>
+    <input type="date" name="dueDate" value="<%= task && task.dueDate ? task.dueDate.toISOString().split('T')[0] : '' %>">
+
+    <label>Status</label>
+    <select name="status">
+        <option value="pending" <%= task && task.status === 'pending' ? 'selected' : '' %>>Pending</option>
+        <option value="completed" <%= task && task.status === 'completed' ? 'selected' : '' %>>Completed</option>
+    </select>
+
+    <button type="submit"><%= task ? "Update Task" : "Add Task" %></button>
+</form>
+
+<a href="/tasks">Back</a>
