@@ -16,7 +16,8 @@
     "express-ejs-layouts": "^2.5.1",
     "mongoose": "^7.6.2",
     "pg": "^8.11.0",
-    "sequelize": "^6.34.0"
+    "sequelize": "^6.34.0",
+    "serverless-http": "^4.0.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.22"
