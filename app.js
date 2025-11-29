@@ -1,3 +1,4 @@
+// app.js
 const express = require('express');
 const path = require('path');
 const expressLayouts = require('express-ejs-layouts');
@@ -5,6 +6,8 @@ const session = require('client-sessions');
 
 const authRoutes = require('./routes/auth');
 const tasksRoutes = require('./routes/tasks');
+const { requireLogin } = require('./middleware/auth');
+const Task = require('./models/task');
 
 const app = express();
 
@@ -19,12 +22,12 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Sessions (client-sessions)
+// Sessions
 app.use(
   session({
     cookieName: 'session',
     secret: process.env.SESSION_SECRET || 'AnyRandomSecret',
-    duration: 30 * 60 * 1000,
+    duration: 30 * 60 * 1000, // 30 minutes
     activeDuration: 5 * 60 * 1000
   })
 );
@@ -39,14 +42,11 @@ app.use((req, res, next) => {
   next();
 });
 
-// Route mounts
+// Routes
 app.use('/', authRoutes);
 app.use('/tasks', tasksRoutes);
 
-// Dashboard route (protected inside middleware)
-const { requireLogin } = require('./middleware/auth');
-const Task = require('./models/task');
-
+// Dashboard route (protected)
 app.get('/dashboard', requireLogin, async (req, res) => {
   try {
     const tasks = await Task.findAll({ where: { userId: req.session.user.userId } });
