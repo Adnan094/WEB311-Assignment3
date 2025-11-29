@@ -1,55 +1,101 @@
-const express = require("express");
+// routes/tasks.js
+const express = require('express');
+const Task = require('../models/task');
+const { requireLogin } = require('../middleware/auth');
+
 const router = express.Router();
-const Task = require("../models/Task");
 
-// Show all tasks
-router.get("/", async (req, res) => {
-  const tasks = await Task.find({ userId: req.session.user.userId });
-  res.render("tasks", { tasks });
+// GET /tasks  - list tasks
+router.get('/', requireLogin, async (req, res) => {
+  try {
+    const tasks = await Task.findAll({ where: { userId: req.session.user.userId }, order: [['createdAt', 'DESC']] });
+    res.render('tasks', { tasks });
+  } catch (err) {
+    console.error('Tasks list error:', err);
+    res.render('tasks', { tasks: [] });
+  }
 });
 
-// Add Task Form
-router.get("/add", (req, res) => {
-  res.render("task_form", { task: null });
+// GET /tasks/add
+router.get('/add', requireLogin, (req, res) => {
+  res.render('task_form', { task: null, action: '/tasks/add', error: null });
 });
 
-// Create Task
-router.post("/add", async (req, res) => {
-  const { title, description, status } = req.body;
+// POST /tasks/add
+router.post('/add', requireLogin, async (req, res) => {
+  try {
+    const { title, description, dueDate, status } = req.body;
+    if (!title || title.trim() === '') return res.render('task_form', { task: null, action: '/tasks/add', error: 'Title is required' });
 
-  await Task.create({
-    title,
-    description,
-    status,
-    userId: req.session.user.userId,
-  });
+    await Task.create({
+      title: title.trim(),
+      description,
+      dueDate: dueDate || null,
+      status: status || 'pending',
+      userId: req.session.user.userId
+    });
 
-  res.redirect("/tasks");
+    res.redirect('/tasks');
+  } catch (err) {
+    console.error('Create task error:', err);
+    res.render('task_form', { task: null, action: '/tasks/add', error: 'Failed to add task' });
+  }
 });
 
-// Edit Task Form
-router.get("/edit/:id", async (req, res) => {
-  const task = await Task.findById(req.params.id);
-  res.render("task_form", { task });
+// GET /tasks/edit/:id
+router.get('/edit/:id', requireLogin, async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (!task || task.userId !== req.session.user.userId) return res.redirect('/tasks');
+    res.render('task_form', { task, action: `/tasks/edit/${task.id}`, error: null });
+  } catch (err) {
+    console.error('Edit form error:', err);
+    res.redirect('/tasks');
+  }
 });
 
-// Update Task
-router.put("/edit/:id", async (req, res) => {
-  const { title, description, status } = req.body;
+// POST /tasks/edit/:id
+router.post('/edit/:id', requireLogin, async (req, res) => {
+  try {
+    const { title, description, dueDate, status } = req.body;
+    const task = await Task.findByPk(req.params.id);
+    if (!task || task.userId !== req.session.user.userId) return res.redirect('/tasks');
 
-  await Task.findByIdAndUpdate(req.params.id, {
-    title,
-    description,
-    status,
-  });
-
-  res.redirect("/tasks");
+    await task.update({ title: title.trim(), description, dueDate: dueDate || null, status });
+    res.redirect('/tasks');
+  } catch (err) {
+    console.error('Edit submit error:', err);
+    res.render('task_form', { task: { id: req.params.id, title, description, dueDate, status }, action: `/tasks/edit/${req.params.id}`, error: 'Failed to update task' });
+  }
 });
 
-// Delete Task
-router.delete("/delete/:id", async (req, res) => {
-  await Task.findByIdAndDelete(req.params.id);
-  res.redirect("/tasks");
+// POST /tasks/delete/:id
+router.post('/delete/:id', requireLogin, async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (task && task.userId === req.session.user.userId) {
+      await Task.destroy({ where: { id: req.params.id } });
+    }
+    res.redirect('/tasks');
+  } catch (err) {
+    console.error('Delete error:', err);
+    res.redirect('/tasks');
+  }
+});
+
+// POST /tasks/status/:id  (toggle)
+router.post('/status/:id', requireLogin, async (req, res) => {
+  try {
+    const task = await Task.findByPk(req.params.id);
+    if (!task || task.userId !== req.session.user.userId) return res.redirect('/tasks');
+
+    task.status = task.status === 'pending' ? 'completed' : 'pending';
+    await task.save();
+    res.redirect('/tasks');
+  } catch (err) {
+    console.error('Status toggle error:', err);
+    res.redirect('/tasks');
+  }
 });
 
 module.exports = router;

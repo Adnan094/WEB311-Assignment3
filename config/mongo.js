@@ -2,12 +2,13 @@
 const mongoose = require('mongoose');
 require('dotenv').config();
 
-function connectMongo() {
+async function connectMongo() {
   const uri = process.env.MONGO_URI || 'mongodb://127.0.0.1:27017/web322';
-  return mongoose.connect(uri, {
+  await mongoose.connect(uri, {
     useNewUrlParser: true,
     useUnifiedTopology: true
   });
+  console.log('MongoDB connected');
 }
 
 module.exports = { connectMongo };

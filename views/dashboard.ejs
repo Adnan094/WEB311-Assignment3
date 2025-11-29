@@ -1,9 +1,11 @@
 <h2>Dashboard</h2>
 
+<p>Welcome, <strong><%= user ? user.username : 'Guest' %></strong></p>
+
 <div class="stats">
-    <p><strong>Total Tasks:</strong> <%= total %></p>
-    <p><strong>Completed:</strong> <%= completed %></p>
-    <p><strong>Pending:</strong> <%= pending %></p>
+  <div>Total tasks: <strong><%= total %></strong></div>
+  <div>Completed: <strong><%= completed %></strong></div>
+  <div>Pending: <strong><%= pending %></strong></div>
 </div>
 
-<a href="/tasks" class="btn">View My Tasks</a>
+<p><a href="/tasks">View Tasks</a> | <a href="/tasks/add">Add Task</a></p>

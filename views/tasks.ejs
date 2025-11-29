@@ -1,34 +1,36 @@
 <h2>My Tasks</h2>
 
-<a href="/tasks/add" class="btn">Add New Task</a>
+<p><a href="/tasks/add">Add New Task</a></p>
 
-<table>
-    <tr>
+<% if (!tasks || tasks.length === 0) { %>
+  <p>No tasks yet.</p>
+<% } else { %>
+  <table border="1" cellpadding="6" cellspacing="0">
+    <thead>
+      <tr>
         <th>Title</th>
         <th>Status</th>
         <th>Due Date</th>
         <th>Actions</th>
-    </tr>
-
-    <% tasks.forEach(task => { %>
+      </tr>
+    </thead>
+    <tbody>
+      <% tasks.forEach(t => { %>
         <tr>
-            <td><%= task.title %></td>
-            <td><%= task.status %></td>
-            <td><%= task.dueDate ? task.dueDate.toDateString() : 'N/A' %></td>
-
-            <td>
-                <form action="/tasks/status/<%= task.id %>" method="POST" style="display:inline;">
-                    <button type="submit">
-                        <%= task.status === "pending" ? "Mark Completed" : "Mark Pending" %>
-                    </button>
-                </form>
-
-                <a href="/tasks/edit/<%= task.id %>" class="btn">Edit</a>
-
-                <form action="/tasks/delete/<%= task.id %>" method="POST" style="display:inline;">
-                    <button type="submit" onclick="return confirm('Delete task?');">Delete</button>
-                </form>
-            </td>
+          <td><%= t.title %></td>
+          <td><%= t.status %></td>
+          <td><%= t.dueDate ? (new Date(t.dueDate)).toISOString().split('T')[0] : 'N/A' %></td>
+          <td>
+            <form action="/tasks/status/<%= t.id %>" method="POST" style="display:inline">
+              <button type="submit"><%= t.status === 'pending' ? 'Mark Completed' : 'Mark Pending' %></button>
+            </form>
+            <a href="/tasks/edit/<%= t.id %>">Edit</a>
+            <form action="/tasks/delete/<%= t.id %>" method="POST" style="display:inline" onsubmit="return confirm('Delete?');">
+              <button type="submit">Delete</button>
+            </form>
+          </td>
         </tr>
-    <% }); %>
-</table>
+      <% }); %>
+    </tbody>
+  </table>
+<% } %>
